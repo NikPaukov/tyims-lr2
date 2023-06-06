@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 import scipy
@@ -26,17 +27,17 @@ def confidence_interval_expectation(arr, t, mean, s):
 
 def confidence_interval_sq(arr, xi1, xi2, s):
     n = len(arr)
-    left = (n - 1) * (s ** 2) / xi1
-    right = (n - 1) * (s ** 2) / xi2
+    left = math.sqrt((n - 1) * (s ** 2) / xi1)
+    right = math.sqrt((n - 1) * (s ** 2) / xi2)
     return [left, right]
 
 
-def get_t_value(percent, size):
-    return abs(scipy.stats.t.ppf((1 - percent) / 2, size - 1))
+def get_t_value(percent, freedom):
+    return abs(scipy.stats.t.ppf(percent, freedom))
 
 
-def get_chi_value(percent, size):
-    return scipy.stats.chi2.ppf(percent, size-1)
+def get_chi_value(percent, freedom):
+    return scipy.stats.chi2.ppf(percent, freedom)
 
 
 def calculate(main_array=[], percent=0.95):
@@ -47,7 +48,7 @@ def calculate(main_array=[], percent=0.95):
         np.random.seed(0)
         main_array = np.random.normal(loc=mean, scale=np.sqrt(variance), size=size)
     size = len(main_array)
-    t = get_t_value(percent, size)
+    t = get_t_value((1 - percent) / 2, size-1)
     s = sq1(main_array) ** 0.5
     average = get_average(main_array)
 
@@ -72,7 +73,7 @@ def print_one(res):
     print("Математичне сподівання:")
     print(str(res.get('conf_expectation')[0]) + " < u < " + str(res.get('conf_expectation')[1]))
     print("\nСередньоквадратичне відхилення:")
-    print(str(res.get('conf_sq')[0]) + " < o^2 < " + str(res.get('conf_sq')[1]))
+    print(str(res.get('conf_sq')[0]) + " < o < " + str(res.get('conf_sq')[1]))
 
 
 size = 145
@@ -102,8 +103,8 @@ def compare(arrays, percents, sortKey='percent', reverse=True):
         size = re.get('size')
         percent = re.get('percent')
         expectation = str(re.get('conf_expectation')[0]) + " < u < " + str(re.get('conf_expectation')[1])
-        sq = str(re.get('conf_sq')[0]) + " < o^2 < " + str(re.get('conf_sq')[1])
+        sq = str(re.get('conf_sq')[0]) + " < o < " + str(re.get('conf_sq')[1])
         print("{:<10} {:<10} {:<50} {:<30}".format(size, percent, expectation, sq))
 print(get_chi_value((1-0.9)/2,100))
-print_one(calculate(main_array, percent=0.9))
+print_one(calculate(main_array, percent=0.95))
 compare(arrays, percents, sortKey='size')
